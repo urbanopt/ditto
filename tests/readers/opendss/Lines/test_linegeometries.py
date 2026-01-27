@@ -57,7 +57,7 @@ def test_linegeometries():
     diag = round(diag.real, 11) + round(diag.imag, 10) * 1j
     rem = ((z0 - z1) / 3) * 0.001  # Units = km
     rem = round(rem.real, 11) + rem.imag * 1j
-    imp_matrix = np.zeros((4, 4), dtype=np.complex_)
+    imp_matrix = np.zeros((4, 4), dtype=np.complex128)
     imp_matrix.fill(rem)
     np.fill_diagonal(imp_matrix, diag)
     imp_matrix = imp_matrix.tolist()

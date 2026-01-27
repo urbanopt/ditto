@@ -65,7 +65,7 @@ def test_line_length():
     diag = round(diag.real, 8) + round(diag.imag, 4) * 1j
     rem = (z0 - z1) / 3
     rem = round(rem.real, 8) + rem.imag * 1j
-    imp_matrix = np.zeros((3, 3), dtype=np.complex_)
+    imp_matrix = np.zeros((3, 3), dtype=np.complex128)
     imp_matrix.fill(rem)
     np.fill_diagonal(imp_matrix, diag)
     imp_matrix = imp_matrix.tolist()
@@ -77,7 +77,7 @@ def test_line_length():
     c_diag = round(c_diag.real, 10) + c_diag.imag * 1j
     c_rem = (c0 - c1) / 3
     c_rem = round(c_rem.real, 10) + c_rem.imag * 1j
-    cap_matrix = np.zeros((3, 3), dtype=np.complex_)
+    cap_matrix = np.zeros((3, 3), dtype=np.complex128)
     cap_matrix.fill(c_rem)
     np.fill_diagonal(cap_matrix, c_diag)
     cap_matrix = cap_matrix.tolist()
@@ -124,7 +124,7 @@ def test_line_length():
     diag = diag.real + diag.imag * 1j
     rem = ((z0 - z1) / 3) / 304.8  # Units = kft
     rem = rem.real + rem.imag * 1j
-    imp_matrix = np.zeros((3, 3), dtype=np.complex_)
+    imp_matrix = np.zeros((3, 3), dtype=np.complex128)
     imp_matrix.fill(rem)
     np.fill_diagonal(imp_matrix, diag)
     imp_matrix = imp_matrix.tolist()
@@ -136,7 +136,7 @@ def test_line_length():
     c_diag = c_diag.real + c_diag.imag * 1j
     c_rem = ((c0 - c1) / 3) / 304.8  # Units = kft
     c_rem = c_rem.real + c_rem.imag * 1j
-    cap_matrix = np.zeros((3, 3), dtype=np.complex_)
+    cap_matrix = np.zeros((3, 3), dtype=np.complex128)
     cap_matrix.fill(c_rem)
     np.fill_diagonal(cap_matrix, c_diag)
     cap_matrix = cap_matrix.tolist()
@@ -184,7 +184,7 @@ def test_line_length():
     diag = diag.real + diag.imag * 1j
     rem = ((z0 - z1) / 3) / 0.3048  # Units = ft
     rem = rem.real + rem.imag * 1j
-    imp_matrix = np.zeros((2, 2), dtype=np.complex_)
+    imp_matrix = np.zeros((2, 2), dtype=np.complex128)
     imp_matrix.fill(rem)
     np.fill_diagonal(imp_matrix, diag)
     imp_matrix = imp_matrix.tolist()
@@ -196,7 +196,7 @@ def test_line_length():
     c_diag = c_diag.real + c_diag.imag * 1j
     c_rem = ((c0 - c1) / 3) / 0.3048  # Units = ft
     c_rem = c_rem.real + c_rem.imag * 1j
-    cap_matrix = np.zeros((2, 2), dtype=np.complex_)
+    cap_matrix = np.zeros((2, 2), dtype=np.complex128)
     cap_matrix.fill(c_rem)
     np.fill_diagonal(cap_matrix, c_diag)
     cap_matrix = cap_matrix.tolist()
@@ -288,7 +288,7 @@ def test_line_length():
     diag = round(diag.real, 6) + diag.imag * 1j
     rem = ((z0 - z1) / 3) / 0.01  # Units = cm
     rem = round(rem.real, 6) + rem.imag * 1j
-    imp_matrix = np.zeros((3, 3), dtype=np.complex_)
+    imp_matrix = np.zeros((3, 3), dtype=np.complex128)
     imp_matrix.fill(rem)
     np.fill_diagonal(imp_matrix, diag)
     imp_matrix = imp_matrix.tolist()
@@ -300,7 +300,7 @@ def test_line_length():
     c_diag = c_diag.real + c_diag.imag * 1j
     c_rem = ((c0 - c1) / 3) / 0.01  # Units = cm
     c_rem = c_rem.real + c_rem.imag * 1j
-    cap_matrix = np.zeros((3, 3), dtype=np.complex_)
+    cap_matrix = np.zeros((3, 3), dtype=np.complex128)
     cap_matrix.fill(c_rem)
     np.fill_diagonal(cap_matrix, c_diag)
     cap_matrix = cap_matrix.tolist()
@@ -397,7 +397,7 @@ def test_line_length():
     diag = diag.real + diag.imag * 1j
     rem = ((z0 - z1) / 3) / 1609.34  # Units = mi
     rem = rem.real + rem.imag * 1j
-    imp_matrix = np.zeros((3, 3), dtype=np.complex_)
+    imp_matrix = np.zeros((3, 3), dtype=np.complex128)
     imp_matrix.fill(rem)
     np.fill_diagonal(imp_matrix, diag)
     imp_matrix = imp_matrix.tolist()
@@ -409,7 +409,7 @@ def test_line_length():
     c_diag = round(c_diag.real, 18) + c_diag.imag * 1j
     c_rem = ((c0 - c1) / 3) / 1609.34  # Units = mi
     c_rem = c_rem.real + c_rem.imag * 1j
-    cap_matrix = np.zeros((3, 3), dtype=np.complex_)
+    cap_matrix = np.zeros((3, 3), dtype=np.complex128)
     cap_matrix.fill(c_rem)
     np.fill_diagonal(cap_matrix, c_diag)
     cap_matrix = cap_matrix.tolist()
@@ -461,7 +461,7 @@ def test_line_length():
     diag = diag.real + diag.imag * 1j
     rem = ((z0 - z1) / 3) / 1609.34  # Units = mi
     rem = rem.real + rem.imag * 1j
-    imp_matrix = np.zeros((3, 3), dtype=np.complex_)
+    imp_matrix = np.zeros((3, 3), dtype=np.complex128)
     imp_matrix.fill(rem)
     np.fill_diagonal(imp_matrix, diag)
     imp_matrix = imp_matrix.tolist()
@@ -473,7 +473,7 @@ def test_line_length():
     c_diag = round(c_diag.real, 18) + c_diag.imag * 1j
     c_rem = ((c0 - c1) / 3) / 1609.34  # Units = mi
     c_rem = c_rem.real + c_rem.imag * 1j
-    cap_matrix = np.zeros((3, 3), dtype=np.complex_)
+    cap_matrix = np.zeros((3, 3), dtype=np.complex128)
     cap_matrix.fill(c_rem)
     np.fill_diagonal(cap_matrix, c_diag)
     cap_matrix = cap_matrix.tolist()
@@ -525,7 +525,7 @@ def test_line_length():
     diag = diag.real + diag.imag * 1j
     rem = ((z0 - z1) / 3) / 1609.34  # Units = mi
     rem = rem.real + rem.imag * 1j
-    imp_matrix = np.zeros((3, 3), dtype=np.complex_)
+    imp_matrix = np.zeros((3, 3), dtype=np.complex128)
     imp_matrix.fill(rem)
     np.fill_diagonal(imp_matrix, diag)
     imp_matrix = imp_matrix.tolist()
@@ -537,7 +537,7 @@ def test_line_length():
     c_diag = round(c_diag.real, 18) + c_diag.imag * 1j
     c_rem = ((c0 - c1) / 3) / 1609.34  # Units = mi
     c_rem = c_rem.real + c_rem.imag * 1j
-    cap_matrix = np.zeros((3, 3), dtype=np.complex_)
+    cap_matrix = np.zeros((3, 3), dtype=np.complex128)
     cap_matrix.fill(c_rem)
     np.fill_diagonal(cap_matrix, c_diag)
     cap_matrix = cap_matrix.tolist()

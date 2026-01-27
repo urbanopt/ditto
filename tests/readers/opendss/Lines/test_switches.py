@@ -63,7 +63,7 @@ def test_switches():
     diag = round(diag.real, 11) + round(diag.imag, 10) * 1j
     rem = ((z0 - z1) / 3) * 0.001  # Units = km
     rem = round(rem.real, 11) + rem.imag * 1j
-    imp_matrix = np.zeros((3, 3), dtype=np.complex_)
+    imp_matrix = np.zeros((3, 3), dtype=np.complex128)
     imp_matrix.fill(rem)
     np.fill_diagonal(imp_matrix, diag)
     imp_matrix = imp_matrix.tolist()
@@ -75,7 +75,7 @@ def test_switches():
     c_diag = round(c_diag.real, 10) + c_diag.imag * 1j
     c_rem = ((c0 - c1) / 3) * 0.001  # Units = km
     c_rem = round(c_rem.real, 10) + c_rem.imag * 1j
-    cap_matrix = np.zeros((3, 3), dtype=np.complex_)
+    cap_matrix = np.zeros((3, 3), dtype=np.complex128)
     cap_matrix.fill(c_rem)
     np.fill_diagonal(cap_matrix, c_diag)
     cap_matrix = cap_matrix.tolist()
@@ -129,7 +129,7 @@ def test_switches():
     c_diag = round(c_diag.real, 9) + c_diag.imag * 1j
     c_rem = ((c0 - c1) / 3) * 0.001  # Units = km
     c_rem = c_rem.real + c_rem.imag * 1j
-    cap_matrix = np.zeros((3, 3), dtype=np.complex_)
+    cap_matrix = np.zeros((3, 3), dtype=np.complex128)
     cap_matrix.fill(c_rem)
     np.fill_diagonal(cap_matrix, c_diag)
     cap_matrix = cap_matrix.tolist()
