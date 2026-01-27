@@ -25,17 +25,5 @@ jobs:
         pip install ".[all,test]"
     - name: run pytests
       run: |
-        pip install pytest pytest-ordering pytest-cov
+        pip install pytest pytest-ordering
         pytest -vvv
-    - name: Generate coverage report
-      run: |
-        pytest --cov=./ --cov-report=xml:unit.coverage.xml
-    - name: Upload unit test coverage to Codecov
-      uses: codecov/codecov-action@v1.0.7
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        file: ./unit.coverage.xml
-        flags: unit
-        env_vars: PYTHON
-        name: codecov-unit
-        fail_ci_if_error: false
