@@ -36,7 +36,7 @@ test_requires = [
     "ghp-import~=2.1",
 ]
 
-numpy_dependency = "numpy~=1.20"
+numpy_dependency = "numpy>=2.2.6"
 
 extras_requires = [
     "lxml~=4.9",
