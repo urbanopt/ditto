@@ -347,7 +347,7 @@ class Reader(AbstractReader):
         for source_name, source_data in sources.items():
 
             # Skip PowerSource object if disabled
-            if not source_data["enabled"] == 'Yes':
+            if not source_data.get("enabled", "Yes") == 'Yes':
                 continue
 
             # Instanciate DiTTo PowerSource object
@@ -385,58 +385,58 @@ class Reader(AbstractReader):
 
             # Set the rated power of the source
             try:
-                api_power_source.rated_power = float(source_data["baseMVA"]) * 10 ** 6
+                api_power_source.rated_power = float(source_data["basemva"]) * 10 ** 6
             except:
                 pass
 
             # Set the emergency power of the source
             try:
                 api_power_source.emergency_power = (
-                    float(source_data["MVAsc3"]) * 10 ** 6
+                    float(source_data["mvasc3"]) * 10 ** 6
                 )
             except:
                 pass
 
             # Zero sequence impedance
-            if "Z0" in source_data and isinstance(source_data["Z0"], list):
-                if len(source_data["Z0"]) == 2:
+            if "z0" in source_data and isinstance(source_data["z0"], list):
+                if len(source_data["z0"]) == 2:
                     try:
                         api_power_source.zero_sequence_impedance = complex(
-                            float(source_data["Z0"][0]), float(source_data["Z0"][1])
+                            float(source_data["z0"][0]), float(source_data["z0"][1])
                         )
                     except:
                         pass
             elif (
-                "R0" in source_data
-                and source_data["R0"] != ""
-                and "X0" in source_data
-                and source_data["X0"] != ""
+                "r0" in source_data
+                and source_data["r0"] != ""
+                and "x0" in source_data
+                and source_data["x0"] != ""
             ):
                 try:
                     api_power_source.zero_sequence_impedance = complex(
-                        float(source_data["R0"]), float(source_data["X0"])
+                        float(source_data["r0"]), float(source_data["x0"])
                     )
                 except:
                     pass
 
             # Positive sequence impedance
-            if "Z1" in source_data and isinstance(source_data["Z1"], list):
-                if len(source_data["Z1"]) == 2:
+            if "z1" in source_data and isinstance(source_data["z1"], list):
+                if len(source_data["z1"]) == 2:
                     try:
                         api_power_source.positive_sequence_impedance = complex(
-                            float(source_data["Z1"][0]), float(source_data["Z1"][1])
+                            float(source_data["z1"][0]), float(source_data["z1"][1])
                         )
                     except:
                         pass
             elif (
-                "R1" in source_data
-                and source_data["R1"] != ""
-                and "X1" in source_data
-                and source_data["X1"] != ""
+                "r1" in source_data
+                and source_data["r1"] != ""
+                and "x1" in source_data
+                and source_data["x1"] != ""
             ):
                 try:
                     api_power_source.positive_sequence_impedance = complex(
-                        float(source_data["R1"]), float(source_data["X1"])
+                        float(source_data["r1"]), float(source_data["x1"])
                     )
                 except:
                     pass
@@ -777,13 +777,13 @@ class Reader(AbstractReader):
         # If the line is disabled we ignore it unless it's a switch
         fuses = _dss_class_to_dict("Fuse")
         fuses_names = [
-            d["MonitoredObj"].lower().split(".")[1] for name, d in fuses.items()
+            d["monitoredobj"].lower().split(".")[1] for name, d in fuses.items()
         ]
 
         # In the same way, reclosers are also attached to line objects
         reclosers = _dss_class_to_dict("recloser")
         reclosers_names = [
-            d["MonitoredObj"].lower().split(".")[1] for name, d in reclosers.items()
+            d["monitoredobj"].lower().split(".")[1] for name, d in reclosers.items()
         ]
 
         start = time.time()
@@ -796,10 +796,9 @@ class Reader(AbstractReader):
         self._lines = []
 
         for name, data in lines.items():
-
             # Skip Line object if disabled and not a switch
             # (Otherwise it could mean that the switch is open)
-            if not data["Switch"]=='Yes' and not data["enabled"]=='Yes':
+            if not data["switch"]=='Yes' and not data.get("enabled", "Yes")=='Yes':
                 continue
 
             api_line = Line(model)
@@ -910,7 +909,7 @@ class Reader(AbstractReader):
                 api_line.is_recloser = True
             elif "breaker" in line_name:
                 api_line.is_breaker = True
-            elif "Switch" in data and data["Switch"]=='Yes':
+            elif "switch" in data and data["switch"]=='Yes':
                 api_line.is_switch = True
 
             # faultrate
@@ -930,7 +929,7 @@ class Reader(AbstractReader):
             if "rmatrix" in data and "xmatrix" in data:
                 Rmatrix = data["rmatrix"]
                 Xmatrix = data["xmatrix"]
-            elif "rmatrix" in linecode_data and "xmatrix" in linecode_data:
+            elif linecode_data is not None and "rmatrix" in linecode_data and "xmatrix" in linecode_data:
                 Rmatrix = linecode_data["rmatrix"]
                 Xmatrix = linecode_data["xmatrix"]
             else:
@@ -1010,7 +1009,7 @@ class Reader(AbstractReader):
 
             if "cmatrix" in data:
                 Cmatrix = data["cmatrix"]
-            elif "cmatrix" in linecode_data:
+            elif linecode_data is not None and "cmatrix" in linecode_data:
                 Cmatrix = linecode_data["cmatrix"]
             else:
                 Cmatrix = None
@@ -1118,7 +1117,7 @@ class Reader(AbstractReader):
 
                 if api_line.is_switch is True:
                     wires[p].is_switch = True
-                    if data["enabled"] =='Yes':
+                    if data.get("enabled", "Yes") =='Yes':
                         wires[p].is_open = False
                     else:
                         wires[p].is_open = True
@@ -1331,10 +1330,10 @@ class Reader(AbstractReader):
 
                         # Get the unit for the GMR
                         try:
-                            wire_gmr_unit = this_line_wireData["GMRunits"]
+                            wire_gmr_unit = this_line_wireData["gmrunits"]
                         # If not present, assume the same unit as the lineGeometry
                         except:
-                            logger(
+                            logger.warning(
                                 "Could not find the wireData GMR distance unit for Wiredata {name}.".format(
                                     name=this_line_wireData_code
                                 )
@@ -1401,7 +1400,7 @@ class Reader(AbstractReader):
                             if Rac is not None:
                                 # Try to get the distance unit for the resistance
                                 try:
-                                    Runits = this_line_wireData["Runits"]
+                                    Runits = this_line_wireData["runits"]
                                 # If not present, assume it is the same as the line unit
                                 # But log this, because it might not be the case. Assume the user is responsible here....
                                 except:
@@ -1458,10 +1457,10 @@ class Reader(AbstractReader):
                         if cndata is not None:
                             for name, data in cndata.items():
                                 try:
-                                    gmr_unit = data["GMRunits"]
+                                    gmr_unit = data["gmrunits"]
                                 except:
-                                    logger(
-                                        "Could not find the GMRunits for {name}.".format(
+                                    logger.warning(
+                                        "Could not find the gmrunits for {name}.".format(
                                             name=name
                                         )
                                     )
@@ -1473,13 +1472,13 @@ class Reader(AbstractReader):
                                             float(data["GmrStrand"]), gmr_unit
                                         )
                                     except:
-                                        logger("Could not convert to GMRunits")
+                                        logger.warning("Could not convert to gmrunits")
 
                                 try:
-                                    r_unit = data["Runits"]
+                                    r_unit = data["runits"]
                                 except:
-                                    logger(
-                                        "Could not find the Runits for {name}.".format(
+                                    logger.warning(
+                                        "Could not find the runits for {name}.".format(
                                             name=name
                                         )
                                     )
@@ -1491,13 +1490,13 @@ class Reader(AbstractReader):
                                             float(data["Rstrand"]), r_unit
                                         )
                                     except:
-                                        logger("Could not convert to  Runits")
+                                        logger.warning("Could not convert to runits")
 
                                 try:
                                     rad_unit = data["radunits"]
                                 except:
-                                    logger(
-                                        "Could not find the Radunits for {name}.".format(
+                                    logger.warning(
+                                        "Could not find the radunits for {name}.".format(
                                             name=name
                                         )
                                     )
@@ -1519,7 +1518,7 @@ class Reader(AbstractReader):
                                             float(data["InsLayer"]), data["radunits"]
                                         )
                                     except:
-                                        logger("Could not convert to radunits")
+                                        logger.warning("Could not convert to radunits")
                                 wires[p].concentric_neutral_nstrand = int(data["k"])
 
             api_line.wires = wires
@@ -1545,7 +1544,7 @@ class Reader(AbstractReader):
         for name, data in transformers.items():
 
             # Skip Transformer object if disabled
-            if not data["enabled"] == 'Yes':
+            if not data.get("enabled", "Yes") == 'Yes':
                 continue
 
             api_transformer = PowerTransformer(model)
@@ -1580,7 +1579,7 @@ class Reader(AbstractReader):
             # normhkva
             try:
                 # DiTTo in volt ampere
-                api_transformer.normhkva = float(data["normhkVA"])
+                api_transformer.normhkva = float(data["normhkva"])
             except:
                 pass
 
@@ -1646,24 +1645,24 @@ class Reader(AbstractReader):
                 pass
 
             # reactances
-            if "Xscarray" in data:
+            if "xscarray" in data:
                 try:
-                    eph = [float(x) for x in data["Xscarray"][0].split()]
+                    eph = [float(x) for x in data["xscarray"][0].split()]
                     for x in eph:
                         api_transformer.reactances.append(x)
                 except:
                     pass
 
-            elif N_windings == 1 and "XHL" in data:
-                api_transformer.reactances = [float(data["XHL"])]
+            elif N_windings == 1 and "xhl" in data:
+                api_transformer.reactances = [float(data["xhl"])]
             elif N_windings == 2:
                 api_transformer.reactances = []
-                if "XHL" in data:
-                    api_transformer.reactances.append(float(data["XHL"]))
-                if "XLT" in data:
-                    api_transformer.reactances.append(float(data["XLT"]))
-                if "XHT" in data:
-                    api_transformer.reactances.append(float(data["XHT"]))
+                if "xhl" in data:
+                    api_transformer.reactances.append(float(data["xhl"]))
+                if "xlt" in data:
+                    api_transformer.reactances.append(float(data["xlt"]))
+                if "xht" in data:
+                    api_transformer.reactances.append(float(data["xht"]))
             # Number of phases
             try:
                 N_phases = int(data["phases"])
@@ -1727,7 +1726,7 @@ class Reader(AbstractReader):
                 # rated_power removed from powerTransformer and added to Winding by Nicolas
                 try:
                     windings[w].rated_power = (
-                        float(data["kVAs"][w]) * 10 ** 3
+                        float(data["kvas"][w]) * 10 ** 3
                     )  # DiTTo in volt ampere
                 except:
                     windings[w].rated_power = None
@@ -1737,7 +1736,7 @@ class Reader(AbstractReader):
                 # emergency_power removed from powerTransformer and added to Winding by Tarek
                 try:
                     windings[w].emergency_power = (
-                        float(data["emerghkVA"]) * 10 ** 3
+                        float(data["emerghkva"]) * 10 ** 3
                     )  # DiTTo in volt ampere
                 except:
                     windings[w].emergency_power = None
@@ -1746,14 +1745,14 @@ class Reader(AbstractReader):
                 # nominal_voltage
                 try:
                     windings[w].nominal_voltage = (
-                        float(data["kVs"][w]) * 10 ** 3
+                        float(data["kvs"][w]) * 10 ** 3
                     )  # DiTTo in Volts
                 except:
                     pass
 
                 # resistance
                 try:
-                    windings[w].resistance = float(data["%Rs"][w])
+                    windings[w].resistance = float(data["%rs"][w])
                 except:
                     pass
 
@@ -1794,10 +1793,10 @@ class Reader(AbstractReader):
                             and reg_data["transformer"].lower()
                             == api_transformer.name.lower()
                         ):
-                            if "R" in reg_data:
-                                phase_windings[p].compensator_r = float(reg_data["R"])
-                            if "X" in reg_data:
-                                phase_windings[p].compensator_x = float(reg_data["X"])
+                            if "r" in reg_data:
+                                phase_windings[p].compensator_r = float(reg_data["r"])
+                            if "x" in reg_data:
+                                phase_windings[p].compensator_x = float(reg_data["x"])
 
                 # Store the phase winding objects in the winding objects
                 for pw in phase_windings:
@@ -1805,18 +1804,18 @@ class Reader(AbstractReader):
 
             # Voltage Type
             if N_windings == 2:
-                if float(data["kVs"][0]) >= float(data["kVs"][1]):
+                if float(data["kvs"][0]) >= float(data["kvs"][1]):
                     windings[0].voltage_type = 0
                     windings[1].voltage_type = 2
                 else:
                     windings[0].voltage_type = 2
                     windings[1].voltage_type = 0
             elif N_windings == 3:
-                if float(data["kVs"][0]) == max(list(map(float, data["kVs"]))):
+                if float(data["kvs"][0]) == max(list(map(float, data["kvs"]))):
                     windings[0].voltage_type = 0
                     windings[1].voltage_type = 2
                     windings[2].voltage_type = 2
-                elif float(data["kVs"][1]) == max(list(map(float, data["kVs"]))):
+                elif float(data["kvs"][1]) == max(list(map(float, data["kvs"]))):
                     windings[0].voltage_type = 2
                     windings[1].voltage_type = 0
                     windings[2].voltage_type = 2
@@ -1847,7 +1846,7 @@ class Reader(AbstractReader):
         for name, data in regulators.items():
 
             # Skip Regulator object if disabled
-            if not data["enabled"] == 'Yes':
+            if not data.get("enabled", "Yes") == 'Yes':
                 continue
 
             api_regulator = Regulator(model)
@@ -1938,40 +1937,40 @@ class Reader(AbstractReader):
 
                 # nominal_voltage
                 for w in range(N_windings):
-                    if "kVs" in trans:
+                    if "kvs" in trans:
                         try:
                             api_regulator.windings[w].nominal_voltage = (
-                                float(trans["kVs"][w]) * 10 ** 3
+                                float(trans["kvs"][w]) * 10 ** 3
                             )  # DiTTo in Volts
                         except:
                             pass
 
                 # resistance
                 for w in range(N_windings):
-                    if "%Rs" in trans:
+                    if "%rs" in trans:
                         try:
                             api_regulator.windings[w].resistance = float(
-                                trans["%Rs"][w]
+                                trans["%rs"][w]
                             )
                         except:
                             pass
 
                 # rated_power
                 for w in range(N_windings):
-                    if "kVAs" in trans:
+                    if "kvas" in trans:
                         try:
                             api_regulator.windings[w].rated_power = (
-                                float(trans["kVAs"][w]) * 10 ** 3
+                                float(trans["kvas"][w]) * 10 ** 3
                             )  # DiTTo in volt ampere
                         except:
                             pass
 
                 # emergency_power
                 for w in range(N_windings):
-                    if "emerghkVA" in trans:
+                    if "emerghkva" in trans:
                         try:
                             api_regulator.windings[w].emergency_power = (
-                                float(trans["emerghkVA"]) * 10 ** 3
+                                float(trans["emerghkva"]) * 10 ** 3
                             )  # DiTTo in volt ampere
                         except:
                             pass
@@ -2008,26 +2007,26 @@ class Reader(AbstractReader):
                                 p
                             ].tap_position = float(trans["taps"][w])
 
-                        elif "TapNum" in data:
+                        elif "tapnum" in data:
                             api_regulator.windings[w].phase_windings[
                                 p
-                            ].tap_position = float(data["TapNum"])
+                            ].tap_position = float(data["tapnum"])
 
                         # compensator_r
-                        if "R" in data:
+                        if "r" in data:
                             try:
                                 api_regulator.windings[w].phase_windings[
                                     p
-                                ].compensator_r = float(data["R"])
+                                ].compensator_r = float(data["r"])
                             except:
                                 pass
 
                         # compensator_x
-                        if "X" in data:
+                        if "x" in data:
                             try:
                                 api_regulator.windings[w].phase_windings[
                                     p
-                                ].compensator_x = float(data["X"])
+                                ].compensator_x = float(data["x"])
                             except:
                                 pass
 
@@ -2040,18 +2039,18 @@ class Reader(AbstractReader):
 
             # Voltage Type
             if N_windings == 2:
-                if float(trans["kVs"][0]) >= float(trans["kVs"][1]):
+                if float(trans["kvs"][0]) >= float(trans["kvs"][1]):
                     api_regulator.windings[0].voltage_type = 0
                     api_regulator.windings[1].voltage_type = 2
                 else:
                     api_regulator.windings[0].voltage_type = 2
                     api_regulator.windings[1].voltage_type = 0
             elif N_windings == 3:
-                if float(trans["kVs"][0]) == max(list(map(float, trans["kVs"]))):
+                if float(trans["kvs"][0]) == max(list(map(float, trans["kvs"]))):
                     api_regulator.windings[0].voltage_type = 0
                     api_regulator.windings[1].voltage_type = 2
                     api_regulator.windings[2].voltage_type = 2
-                elif float(trans["kVs"][1]) == max(list(map(float, trans["kVs"]))):
+                elif float(trans["kvs"][1]) == max(list(map(float, trans["kvs"]))):
                     api_regulator.windings[0].voltage_type = 2
                     api_regulator.windings[1].voltage_type = 0
                     api_regulator.windings[2].voltage_type = 2
@@ -2062,7 +2061,7 @@ class Reader(AbstractReader):
 
             # CTprim
             try:
-                api_regulator.ct_prim = float(data["CTprim"])
+                api_regulator.ct_prim = float(data["ctprim"])
             except:
                 pass
 
@@ -2146,7 +2145,7 @@ class Reader(AbstractReader):
             # pt_phase
             try:
                 api_regulator.pt_phase = self.phase_mapping(
-                    phases[int(data["PTphase"]) - 1]
+                    phases[int(data["ptphase"]) - 1]
                 )
             except:
                 pass
@@ -2170,7 +2169,7 @@ class Reader(AbstractReader):
 
         for name, data in capacitors.items():
             # Skip Capacitor object if disabled
-            if not data["enabled"] == 'Yes':
+            if not data.get("enabled", "Yes") == 'Yes':
                 continue
 
             api_capacitor = Capacitor(model)
@@ -2216,7 +2215,7 @@ class Reader(AbstractReader):
 
             # delay
             try:
-                api_capacitor.delay = float(cap_control[control_id]["Delay"])
+                api_capacitor.delay = float(cap_control[control_id]["delay"])
             except:
                 pass
 
@@ -2244,40 +2243,40 @@ class Reader(AbstractReader):
             # low
             if control_id is not None:
                 try:
-                    api_capacitor.low = float(cap_control[control_id]["Vmin"])
+                    api_capacitor.low = float(cap_control[control_id]["vmin"])
                 except:
                     pass
 
             # High
             if control_id is not None:
                 try:
-                    api_capacitor.high = float(cap_control[control_id]["Vmax"])
+                    api_capacitor.high = float(cap_control[control_id]["vmax"])
                 except:
                     pass
 
             # resistance
             try:
-                api_capacitor.resistance = sum(map(lambda x: float(x), data["R"]))
+                api_capacitor.resistance = sum(map(lambda x: float(x), data["r"]))
             except:
                 pass
 
             # reactance
             try:
-                api_capacitor.reactance = sum(map(lambda x: float(x), data["XL"]))
+                api_capacitor.reactance = sum(map(lambda x: float(x), data["xl"]))
             except:
                 pass
 
             # PT ratio
             if control_id is not None:
                 try:
-                    api_capacitor.pt_ratio = float(cap_control[control_id]["PTratio"])
+                    api_capacitor.pt_ratio = float(cap_control[control_id]["ptratio"])
                 except:
                     pass
 
             # CT ratio
             if control_id is not None:
                 try:
-                    api_capacitor.ct_ratio = float(cap_control[control_id]["CTratio"])
+                    api_capacitor.ct_ratio = float(cap_control[control_id]["ctratio"])
                 except:
                     pass
 
@@ -2285,7 +2284,7 @@ class Reader(AbstractReader):
             if control_id is not None:
                 try:
                     api_capacitor.pt_phase = self.phase_mapping(
-                        int(cap_control[control_id]["PTPhase"])
+                        int(cap_control[control_id]["ptphase"])
                     )
                 except:
                     pass
@@ -2379,7 +2378,7 @@ class Reader(AbstractReader):
         for name, data in loads.items():
 
             # Skip Load object if disabled
-            if not data["enabled"] == 'Yes':
+            if not data.get("enabled", "Yes") == 'Yes':
                 continue
 
             api_load = Load(model)
@@ -2407,12 +2406,12 @@ class Reader(AbstractReader):
 
             # nominal voltage
             try:
-                api_load.nominal_voltage = float(data["kV"]) * 10 ** 3  # DiTTo in volts
+                api_load.nominal_voltage = float(data["kv"]) * 10 ** 3  # DiTTo in volts
             except:
                 pass
 
             try:
-                api_load.num_users = float(data["NumCust"])
+                api_load.num_users = float(data["numcust"])
             except:
                 pass
 
@@ -2428,13 +2427,13 @@ class Reader(AbstractReader):
 
             # vmin
             try:
-                api_load.vmin = float(data["Vminpu"])
+                api_load.vmin = float(data["vminpu"])
             except:
                 pass
 
             # vmax
             try:
-                api_load.vmax = float(data["Vmaxpu"])
+                api_load.vmax = float(data["vmaxpu"])
             except:
                 pass
 
@@ -2471,7 +2470,6 @@ class Reader(AbstractReader):
             #    - The connection is Delta
             #        In this case, we should create the correct number of phase loads and make sure
             #        the connection information will be handled correctly
-
             if N_phases != len(phases):
                 if N_phases is None and phases is None:
                     logger.warning(
@@ -2494,14 +2492,14 @@ class Reader(AbstractReader):
 
             # Get the kW if present
             try:
-                kW = float(data["kW"])
+                kW = float(data["kw"])
             except:
                 kW = None
                 pass
 
             # Get the kva if present
             try:
-                kva = float(data["kVA"])
+                kva = float(data["kva"])
             except:
                 kva = None
                 pass
@@ -2568,7 +2566,7 @@ class Reader(AbstractReader):
                 if _model == 8:
                     # Try to get the ZIPV coefficients
                     try:
-                        ZIPV = list(map(lambda x: float(x), data["ZIPV"][0].split()))
+                        ZIPV = list(map(lambda x: float(x), data["zipv"][0].split()))
                     except:
                         ZIPV = None
                         pass
@@ -2607,7 +2605,7 @@ class Reader(AbstractReader):
         for name, data in storages.items():
 
             # Skip Storage object if disabled
-            if not data["enabled"] == 'Yes':
+            if not data.get("enabled", "Yes") == 'Yes':
                 continue
 
             api_storage = Storage(model)
@@ -2636,20 +2634,20 @@ class Reader(AbstractReader):
             # rated_power
             try:
                 api_storage.rated_power = (
-                    float(data["kWrated"]) * 10 ** 3
+                    float(data["kwrated"]) * 10 ** 3
                 )  # DiTTo in watts
             except:
                 pass
 
             # rated_kWh
             try:
-                api_storage.rated_kWh = float(data["kWhrated"])
+                api_storage.rated_kWh = float(data["kwhrated"])
             except:
                 pass
 
             # stored_kWh
             try:
-                api_storage.stored_kWh = float(data["kWhstored"])
+                api_storage.stored_kWh = float(data["kwhstored"])
             except:
                 pass
 
@@ -2667,37 +2665,37 @@ class Reader(AbstractReader):
 
             # discharge_rate
             try:
-                api_storage.discharge_rate = float(data["%Discharge"])
+                api_storage.discharge_rate = float(data["%discharge"])
             except:
                 pass
 
             # charge_rate
             try:
-                api_storage.charge_rate = float(data["%Charge"])
+                api_storage.charge_rate = float(data["%charge"])
             except:
                 pass
 
             # charging_efficiency
             try:
-                api_storage.charging_efficiency = float(data["%EffCharge"])
+                api_storage.charging_efficiency = float(data["%effcharge"])
             except:
                 pass
 
             # discharging_efficiency
             try:
-                api_storage.discharging_efficiency = float(data["%EffDischarge"])
+                api_storage.discharging_efficiency = float(data["%effdischarge"])
             except:
                 pass
 
             # resistance
             try:
-                api_storage.resistance = float(data["%R"])
+                api_storage.resistance = float(data["%r"])
             except:
                 pass
 
             # reactance
             try:
-                api_storage.reactance = float(data["%X"])
+                api_storage.reactance = float(data["%x"])
             except:
                 pass
 
@@ -2727,13 +2725,13 @@ class Reader(AbstractReader):
 
             # discharge_trigger
             try:
-                api_storage.discharge_trigger = float(data["DischargeTrigger"])
+                api_storage.discharge_trigger = float(data["dischargetrigger"])
             except:
                 pass
 
             # charge_trigger
             try:
-                api_storage.charge_trigger = float(data["ChargeTrigger"])
+                api_storage.charge_trigger = float(data["chargetrigger"])
             except:
                 pass
 
@@ -2746,7 +2744,7 @@ class Reader(AbstractReader):
                     pass
 
                 try:
-                    api_phase_storage.p = float(data["kW"]) / float(N_phases)
+                    api_phase_storage.p = float(data["kw"]) / float(N_phases)
                 except:
                     pass
 
@@ -2817,7 +2815,7 @@ class Reader(AbstractReader):
             # rated_power
             try:
                 api_generator.rated_power = (
-                    float(data["kVA"]) * 10 ** 3
+                    float(data["kva"]) * 10 ** 3
                 )  # DiTTo in watts
             except:
                 pass
@@ -2832,13 +2830,13 @@ class Reader(AbstractReader):
 
             # vmin
             try:
-                api_generator.v_min_pu = float(data["Vminpu"])
+                api_generator.v_min_pu = float(data["vminpu"])
             except:
                 pass
 
             # vmax
             try:
-                api_generator.v_max_pu = float(data["Vmaxpu"])
+                api_generator.v_max_pu = float(data["vmaxpu"])
             except:
                 pass
 
@@ -2853,4 +2851,21 @@ class Reader(AbstractReader):
         return 1
 
 def _dss_class_to_dict(class_name):
-    return dss.utils.class_to_dataframe(class_name).to_dict(orient="index")
+    """
+    Get OpenDSS class data as a dictionary with normalized lowercase keys.
+    
+    This function wraps dss.utils.class_to_dataframe() and ensures that all
+    dictionary keys are lowercase for backward compatibility, since numpy 2.x
+    changed the key casing behavior in the dataframe output.
+    """
+    df_dict = dss.utils.class_to_dataframe(class_name).to_dict(orient="index")
+    
+    # Normalize all keys to lowercase for backward compatibility
+    normalized_dict = {}
+    for outer_key, inner_dict in df_dict.items():
+        normalized_inner_dict = {}
+        for key, value in inner_dict.items():
+            normalized_inner_dict[key.lower()] = value
+        normalized_dict[outer_key] = normalized_inner_dict
+    
+    return normalized_dict
